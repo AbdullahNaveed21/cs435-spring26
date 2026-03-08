@@ -1,0 +1,12 @@
+For our secure aggregation lab, the closest real world counterpart on a major cloud platform is Google Cloud's federated learning infrastructure, specifically TensorFlow Federated (TFF) combined with Confidential Computing.
+
+TensorFlow Federated is Google's open source framework for machine learning on decentralized data. It implements secure aggregation through something called SecureModularSumFactory, which uses the exact same idea we coded, each client masks its update with random noise before sending it and the server only ever sees the sum. The masks are coordinated between client pairs so they cancel out on aggregation, meaning the server learns nothing about any individual device's contribution. On top of that TFF handles the dropout problem we saw in our stretch task using Shamir Secret Sharing. If a client goes offline mid round, the surviving clients can reconstruct just enough information to cancel the missing masks without revealing anything private. This is actually the same protocol Google uses in production for things like improving Gboard predictions on Android phones without ever seeing what anyone typed.
+
+The second layer Google Cloud adds is Confidential Computing. This is a hardware level protection using AMD SEV or Intel TDX on Confidential VMs and Confidential GKE Nodes. The idea is that even if an attacker somehow got access to the server running the aggregation, the data being processed is encrypted in memory and cannot be read in plaintext. This goes a step beyond what our simulation covers, we assumed an honest server but Confidential Computing protects against a compromised one too.
+
+Together these two things, the algorithmic masking from SecAgg and the hardware encryption from Confidential Computing, form a two layer privacy guarantee. Our lab essentially simulates the first layer from scratch. A real production deployment on Google Cloud would stack both on top of each other.
+
+Docs:
+TFF SecAgg: https://www.tensorflow.org/federated/api_docs/python/tff/aggregators/SecureModularSumFactory
+Confidential Computing overview: https://cloud.google.com/confidential-computing/docs/overview
+Vertex AI data privacy: https://cloud.google.com/vertex-ai/docs/general/data-privacy
